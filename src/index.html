@@ -23,15 +23,22 @@
 		const errorMsg = document.querySelector('.error-msg');
 		if ('FaceDetector' in window) {
 
-
-
 			// Initializing vars & consts
 			const video = document.querySelector('video');
 			const canvas = document.querySelector('canvas');
 			const context = canvas.getContext('2d');
 
 			const faceDetector = new FaceDetector();
+			//The path to the image that we want to add.
+			const imgPath = './MargeSimpson15.png';
+			// 417x658
+			//Create a new Image object.
+			const imgObj = new Image();
 
+			let facePics = [];
+
+			//Set the src of this Image object.
+			imgObj.src = imgPath;
 			// Get access to the camera
 			if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 				navigator.mediaDevices.getUserMedia({ video: true }).then(function (stream) {
@@ -47,29 +54,46 @@
 
 			// Draw face highlighters
 			async function drawFaces(faces) {
+				facePics = [];
+
 				faces.forEach(face => {
 
 					const { width, height, top, left } = face.boundingBox;
+					console.log(face);
 
 					context.strokeStyle = '#00FF00';
 					context.lineWidth = 5;
-					context.strokeRect(left, top, width, height);
+					//context.strokeRect(left, top, width, height);
+					let picWidth = width * 1.5;
+					let picHeight = picWidth * (658 / 417);
+					let leftOffset = left - width / 4;
+					let topOffset = top - 5 / 6 * picHeight;
 
-					face.landmarks.forEach(landmark => {
-						context.lineWidth = 1;
-						if (landmark.type === 'eye') {
-							context.strokeStyle = '#FF0000';
-							context.strokeRect(landmark.location.x - 20, landmark.location.y - 20, 40, 20);
-						} else {
-							context.strokeStyle = '#0000FF';
-							context.strokeRect(landmark.location.x - 40, landmark.location.y - 40, 80, 40);
-						}
+					facePics.push({
+						picWidth: picWidth,
+						picHeight: picHeight,
+						leftOffset: leftOffset,
+						topOffset: topOffset,
 					});
+					
+					//face.landmarks.forEach(landmark => {
+					//	context.lineWidth = 1;
+					//	if (landmark.type === 'eye') {
+					//		context.strokeStyle = '#FF0000';
+					//		context.strokeRect(landmark.locations[0].x - 20, landmark.locations[0].y - 20, 40, 20);
+					//	} else {
+					//		context.strokeStyle = '#0000FF';
+					//		context.strokeRect(landmark.locations[0].x - 40, landmark.locations[0].y - 40, 80, 40);
+					//	}
+					//});
 				});
 			}
 
 			setInterval(() => {
 				context.drawImage(video, 0, 0, canvas.width, canvas.height);
+				facePics.forEach( face => {
+					context.drawImage(imgObj, face.leftOffset, face.topOffset, face.picWidth, face.picHeight);
+				});
 				detect();
 			}, 100);
 		} else {
@@ -83,16 +107,6 @@
 			}
 		}
 	</script>
-	<!-- Global site tag (gtag.js) - Google Analytics -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116311938-1"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-
-		gtag('config', 'UA-116311938-1');
-	</script>
-
 </body>
 
 </html>
